@@ -1,3 +1,4 @@
+---
 name: Build and Release Halo TFT LCD Firmware
 
 env:
@@ -6,11 +7,11 @@ env:
 on:
   push:
     paths:
-      - 'TFT_LCD/**'
+      - "TFT_LCD/**"
   workflow_dispatch:
     inputs:
       version:
-        description: 'The version of the firmware to build'
+        description: "The version of the firmware to build"
         required: true
   release:
     types: [published]
@@ -29,19 +30,20 @@ jobs:
       - name: Get Version
         id: get_version
         run: |
-          version=$(awk '/substitutions:/ {found=1} found && /version:/ {print $2; exit}' TFT_LCD/T-Display-Long/V1/Firmware/ESPHome/Halo-v1-Core.yaml | tr -d '"')
+          version=$(awk '/substitutions:/ {found=1} found && /version:/ {print $2; exit}' \
+            TFT_LCD/T-Display-Long/V1/Firmware/ESPHome/Halo-v1-Core.yaml | tr -d '"')
           echo "project_version=$version" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # Use PAT for authentication
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           tag_name: ${{ env.project_version }}
           release_name: "Release ${{ env.project_version }}"
           draft: false
           prerelease: false
-          body: "Auto-generated release from GitHub Actions."
+          body: 'Auto-generated release from GitHub Actions.'
 
   build-firmware:
     name: Build And Release
@@ -54,7 +56,8 @@ jobs:
       combined-name: firmware
       release-summary: ${{ github.event.release.body || '' }}
       release-url: ${{ github.event.release.html_url || '' }}
-      release-version: ${{ github.event.release.tag_name || github.ref_name || 'dev' }}
+      release-version: >-
+        ${{ github.event.release.tag_name || github.ref_name || 'dev' }}
 
   build-site:
     name: Build Site
@@ -95,7 +98,7 @@ jobs:
           path: firmware
 
       - name: Copy Firmware and Manifest
-        run: |-
+        run: |
           mkdir -p output/firmware
           cp -r firmware/${{ needs.build-firmware.outputs.version }}/* output/firmware/
 
