@@ -26,6 +26,12 @@ jobs:
     permissions:
       contents: write  # Ensure permissions for writing to the repo
     steps:
+      - name: Pre-download cache action
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-dummy-cache
+
       - name: Checkout Repository
         uses: actions/checkout@v4.1.7
 
