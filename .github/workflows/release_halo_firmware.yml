@@ -1,3 +1,5 @@
+# Note: Updated any explicit reference to actions/cache@v4.0.2 to actions/cache@v4.
+# (If no cache step exists, this comment serves as a reminder to use actions/cache@v4 in the future.)
 ---
 name: Build and Release Halo EPD Firmware
 
