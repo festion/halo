@@ -48,7 +48,7 @@ jobs:
         with:
           script: |
             const tag = process.env.project_version;
-            // Try to get the release by tag; if it doesn't exist, the catch will return an empty object.
+            // Try to get the release by tag. If it doesn't exist, catch the error and return an empty object.
             const { data: release } = await github.rest.repos.getReleaseByTag({
               owner: context.repo.owner,
               repo: context.repo.repo,
