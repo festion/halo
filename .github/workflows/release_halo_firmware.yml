@@ -36,7 +36,24 @@ jobs:
             E-Paper/Waveshare_BWR/V1/Firmware/ESPHome/Halo_EPD-Core.yaml | tr -d '"')
           echo "project_version=$version" >> $GITHUB_ENV
 
+      - name: Check if Release Exists
+        id: check_release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tag = process.env.project_version;
+            // Try to get the release by tag; if it doesn't exist, the catch will return an empty object.
+            const { data: release } = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: tag
+            }).catch(() => ({ data: {} }));
+            return { exists: release && release.id ? 'true' : 'false' };
+        env:
+          project_version: ${{ env.project_version }}
+
       - name: Create GitHub Release
+        if: steps.check_release.outputs.exists != 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
