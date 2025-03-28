@@ -19,9 +19,12 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'  # Only create a release on push
+    if: github.event_name == 'push'
     permissions:
-      contents: write  # Ensure permissions for writing to the repo
+      contents: write
+    outputs:
+      release_skipped: ${{ steps.check_tag.outputs.exists }}
+      version: ${{ env.project_version }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.1.7
@@ -32,10 +35,20 @@ jobs:
           version=$(awk '/substitutions:/ {found=1} found && /version:/ {print $2; exit}' TFT_LCD/T-Display-Long/V1/Firmware/ESPHome/Halo-v1-Core.yaml | tr -d '"')
           echo "project_version=$version" >> $GITHUB_ENV
 
+      - name: Check if Tag Exists
+        id: check_tag
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ env.project_version }}$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}  # Use PAT for authentication
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           tag_name: ${{ env.project_version }}
           release_name: "Release ${{ env.project_version }}"
